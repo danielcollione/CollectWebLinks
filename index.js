@@ -108,7 +108,7 @@ coletarLinks = async url => {
   console.log("Collect Web Links");
   console.log("===============================================");
 
-  input.question("Digite o site a ser analisado: ", async resposta => {
+  input.question("Digite o site a ser coletados as URL's: ", async resposta => {
     urlInicial = resposta;
 
     if (urlInicial.includes("http://") || urlInicial.includes("https://")) {
