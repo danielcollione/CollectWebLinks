@@ -184,15 +184,13 @@ coletarLinks = async (url) => {
             console.log("\n===============================================");
             console.log("\nLinks salvos no Banco de Dados");
             console.log("\n===============================================");
-            
           } else {
-            
           }
           input.question(
             "\nDeseja imprimir todos os links salvos no Banco de Dados? Digite 'S' ou 'N'...: ",
             async (resposta2) => {
               resp2 = resposta2;
-    
+
               if (
                 resp2 === "sim" ||
                 resp2 === "s" ||
@@ -206,15 +204,12 @@ coletarLinks = async (url) => {
                 input.close();
                 process.exit();
               }
-    
+
               process.exit();
             }
           );
-
         }
-        
       );
-      
     }
   );
 })();
