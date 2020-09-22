@@ -1,8 +1,44 @@
 const axios = require("axios");
 const cheerio = require("cheerio");
 const readline = require("readline");
+const mongoose = require('mongoose');
+const express = require('express');
+const requireDir = require('require-dir');
+const cors = require('cors');
+const config = require('./src/config/config');
 
-let urlInicial = "http://testphp.vulnweb.com/";
+const url = config.URI_MONGO;
+const options = {
+  useNewUrlParser: true,
+    useCreateIndex: true,
+    useFindAndModify: false,
+    useUnifiedTopology: true
+}
+
+mongoose.set('useCreateIndex', true);
+
+mongoose
+    .connect(url, options)
+    // .then(() => console.log('Mongo is ready'))
+    // .catch(err => console.log('mongo avec error', err))
+
+
+// mongoose.Promise = global.Promise
+
+module.exports = mongoose
+
+//let urlInicial = "http://testphp.vulnweb.com/";
+
+const app = express();
+app.use(express.json());
+app.use(cors());
+
+
+requireDir('./src/models');
+
+app.use('/sistema', require('./src/routes/routes'));
+app.listen(3001);
+
 
 let arrayLinks = [];
 let linksVerificados = [];
