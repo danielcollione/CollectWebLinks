@@ -174,11 +174,10 @@ coletarLinks = async url => {
       console.log(linksVerificados);
 
       try{
-        
-        await 'http://localhost:3001'.post('/link/sistema',{
-          linksVerificados,
+        await endereco.post('/sistema/link',{
+          url: linksVerificados.join(),
       });
-
+      console.log('Links salvos no Banco de Dados');
       }catch(err){
         console.log('nao deu bom');
       }
