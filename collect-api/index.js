@@ -1,54 +1,39 @@
 const axios = require("axios");
 const cheerio = require("cheerio");
 const readline = require("readline");
-const mongoose = require('mongoose');
-const express = require('express');
-const requireDir = require('require-dir');
-const cors = require('cors');
-const config = require('./src/config/config');
+const mongoose = require("mongoose");
+const express = require("express");
+const requireDir = require("require-dir");
+const cors = require("cors");
+const config = require("./src/config/config");
+
+const endereco = axios.create({
+  baseURL: "http://localhost:3001",
+});
 
 const url = config.URI_MONGO;
 const options = {
   useNewUrlParser: true,
-    useCreateIndex: true,
-    useFindAndModify: false,
-    useUnifiedTopology: true
-}
+  useCreateIndex: true,
+  useFindAndModify: false,
+  useUnifiedTopology: true,
+};
 
-mongoose.set('useCreateIndex', true);
-
-mongoose
-    .connect(url, options)
-    // .then(() => console.log('Mongo is ready'))
-    // .catch(err => console.log('mongo avec error', err))
-
-
-// mongoose.Promise = global.Promise
-
-module.exports = mongoose
-
-//let urlInicial = "http://testphp.vulnweb.com/";
+mongoose.set("useCreateIndex", true);
+mongoose.connect(url, options);
+module.exports = mongoose;
 
 const app = express();
 app.use(express.json());
 app.use(cors());
-
-
-requireDir('./src/models');
-
-app.use('/sistema', require('./src/routes/routes'));
-app.listen(3001);
-
-const endereco = axios.create({
-  baseURL: 'http://localhost:3001'
-})
-
+requireDir("./src/models");
+app.use("/sistema", require("./src/routes/routes"));
+var server = app.listen(3001);
 
 let arrayLinks = [];
 let linksVerificados = [];
 
-
-coletarLinks = async url => {
+coletarLinks = async (url) => {
   let newUrl = url;
   let protocol = "http://";
   if (newUrl.includes("http://")) {
@@ -64,7 +49,7 @@ coletarLinks = async url => {
   let siteInfo = url.split("/");
   siteInfo = siteInfo[2];
 
-  arrayLinks = arrayLinks.filter(item => {
+  arrayLinks = arrayLinks.filter((item) => {
     return item !== url;
   });
 
@@ -84,12 +69,12 @@ coletarLinks = async url => {
       if (href.includes("http")) {
         if (href.includes(siteInfo)) {
           let count = 0;
-          arrayLinks.map(item => {
+          arrayLinks.map((item) => {
             if (item === href) {
               ++count;
             }
           });
-          linksVerificados.map(item => {
+          linksVerificados.map((item) => {
             if (item === href) {
               ++count;
             }
@@ -114,12 +99,12 @@ coletarLinks = async url => {
           }
 
           let count = 0;
-          arrayLinks.map(item => {
+          arrayLinks.map((item) => {
             if (item === newHref) {
               ++count;
             }
           });
-          linksVerificados.map(item => {
+          linksVerificados.map((item) => {
             if (item === newHref) {
               ++count;
             }
@@ -141,52 +126,91 @@ coletarLinks = async url => {
 (async () => {
   const input = readline.createInterface({
     input: process.stdin,
-    output: process.stdout
+    output: process.stdout,
   });
 
   console.log("===============================================");
   console.log("Collect Web Links");
   console.log("===============================================");
 
-  input.question("Digite o site a ser coletados as URL's: ", async resposta => {
-    urlInicial = resposta;
+  //url de teste = "http://testphp.vulnweb.com/";
 
-    if (urlInicial.includes("http://") || urlInicial.includes("https://")) {
-      arrayLinks = await coletarLinks(urlInicial);
-      console.log("\nBuscando links no site...");
-      console.log("\nItens iniciais:", arrayLinks.length);
+  input.question(
+    "Digite o site a ser coletados as URL's: ",
+    async (resposta) => {
+      urlInicial = resposta;
 
-      do {
-        await Promise.all(
-          await arrayLinks.map(async item => {
-            const respostaArray = await coletarLinks(item);
-            if (respostaArray.length > 0) {
-              console.log(
-                "Adicionado mais " + respostaArray.length + " links."
-              );
-            }
-            arrayLinks.push(...respostaArray);
-          })
-        );
-      } while (arrayLinks.length !== 0);
+      if (urlInicial.includes("http://") || urlInicial.includes("https://")) {
+        arrayLinks = await coletarLinks(urlInicial);
+        console.log("\nBuscando links no site...");
+        console.log("\nItens iniciais:", arrayLinks.length);
 
-      console.log("\nLinks Encontrados:");
-      console.log(linksVerificados);
+        do {
+          await Promise.all(
+            await arrayLinks.map(async (item) => {
+              const respostaArray = await coletarLinks(item);
+              if (respostaArray.length > 0) {
+                console.log(
+                  "Adicionado mais " + respostaArray.length + " links."
+                );
+              }
+              arrayLinks.push(...respostaArray);
+            })
+          );
+        } while (arrayLinks.length !== 0);
 
-      try{
-        await endereco.post('/sistema/link',{
-          url: linksVerificados.join(),
-      });
-      console.log('Links salvos no Banco de Dados');
-      }catch(err){
-        console.log('nao deu bom');
+        console.log("===============================================");
+        console.log("\nLinks Encontrados:" + linksVerificados.length + "links");
+        console.log("\n===============================================");
+      } else {
+        console.log("Url inválida");
       }
 
-      
-    } else {
-      console.log("Url inválida");
-    }
+      input.question(
+        "\nDeseja salvar os links no Banco de Dados? Digite 'S' ou 'N'...: ",
+        async (resposta3) => {
+          resp3 = resposta3;
 
-    input.close();
-  });
+          if (
+            resp3 === "sim" ||
+            resp3 === "s" ||
+            resp3 === "Sim" ||
+            resp3 === "SIM"
+          ) {
+            await endereco.post("/sistema/link", {
+              url: linksVerificados.join(),
+            });
+            console.log("\n===============================================");
+            console.log("\nLinks salvos no Banco de Dados");
+            console.log("\n===============================================");
+
+            input.question(
+              "\nDeseja imprimir todos os links salvos no Banco de Dados? Digite 'S' ou 'N'...: ",
+              async (resposta2) => {
+                resp2 = resposta2;
+
+                if (
+                  resp2 === "sim" ||
+                  resp2 === "s" ||
+                  resp2 === "Sim" ||
+                  resp2 === "SIM"
+                ) {
+                  let temp = [];
+                  temp = await endereco.get("/sistema/list");
+                  console.log(temp.data);
+                } else {
+                  input.close();
+                  process.exit();
+                }
+
+                process.exit();
+              }
+            );
+          } else {
+            process.exit();
+          }
+        }
+      );
+    }
+  );
 })();
