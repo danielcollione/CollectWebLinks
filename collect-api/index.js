@@ -163,7 +163,8 @@ coletarLinks = async (url) => {
         console.log("\nLinks Encontrados:" + linksVerificados.length + "links");
         console.log("\n===============================================");
       } else {
-        console.log("Url inválida");
+        console.log("\nUrl inválida, execute 'node index.js' novamente..");
+        process.exit();
       }
 
       input.question(
@@ -183,34 +184,37 @@ coletarLinks = async (url) => {
             console.log("\n===============================================");
             console.log("\nLinks salvos no Banco de Dados");
             console.log("\n===============================================");
-
-            input.question(
-              "\nDeseja imprimir todos os links salvos no Banco de Dados? Digite 'S' ou 'N'...: ",
-              async (resposta2) => {
-                resp2 = resposta2;
-
-                if (
-                  resp2 === "sim" ||
-                  resp2 === "s" ||
-                  resp2 === "Sim" ||
-                  resp2 === "SIM"
-                ) {
-                  let temp = [];
-                  temp = await endereco.get("/sistema/list");
-                  console.log(temp.data);
-                } else {
-                  input.close();
-                  process.exit();
-                }
-
+            
+          } else {
+            
+          }
+          input.question(
+            "\nDeseja imprimir todos os links salvos no Banco de Dados? Digite 'S' ou 'N'...: ",
+            async (resposta2) => {
+              resp2 = resposta2;
+    
+              if (
+                resp2 === "sim" ||
+                resp2 === "s" ||
+                resp2 === "Sim" ||
+                resp2 === "SIM"
+              ) {
+                let temp = [];
+                temp = await endereco.get("/sistema/list");
+                console.log(temp.data);
+              } else {
+                input.close();
                 process.exit();
               }
-            );
-          } else {
-            process.exit();
-          }
+    
+              process.exit();
+            }
+          );
+
         }
+        
       );
+      
     }
   );
 })();
